@@ -12,12 +12,12 @@
 // 分页列表
 import myAxios from "@/utils/request"
 export default{
-    remove(id){
-        return myAxios({
-            url:`/admin/product/baseTrademark/remove/${id}`,
-            methods:"delete"
-        })
-    },
+  remove(id){
+    return myAxios({
+      url:`/admin/product/baseTrademark/remove/${id}`,
+      method:'delete',
+    })
+  },
     /*查看数据是否由id，如果由就删除，如果没就添加 */
     addOrUpdate(trademark){
         if(trademark.id){

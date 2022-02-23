@@ -19,14 +19,22 @@
           <img :src="row.logoUrl" alt="" style="width: 80px; height: 60px" />
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="width" >
+      <el-table-column label="操作" width="width">
         <template v-slot="{ row, $index }">
-         <el-button type="warning" size="mini" icon="el-icon-edit"  @click="showUpdateDialog(row)"
-          >修改</el-button
-        >
-        <el-button type="danger" size="mini" icon="el-icon-delete"
-          >删除</el-button
-        >
+          <el-button
+            type="warning"
+            size="mini"
+            icon="el-icon-edit"
+            @click="showUpdateDialog(row)"
+            >修改</el-button
+          >
+          <el-button
+            type="danger"
+            size="mini"
+            icon="el-icon-delete"
+            @click="deleteUpDate(row)"
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -71,8 +79,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addOrUpdate">确 定</el-button
-        >
+        <el-button type="primary" @click="addOrUpdate">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -125,12 +132,12 @@ export default {
     //点击后显示出添加框
     showAddDialog() {
       this.dialogFormVisible = true;
-        this.tmForm = {
+      this.tmForm = {
         tmName: "",
         logoUrl: "",
       };
     },
-     // 点击修改按钮，显示对话框
+    // 点击修改按钮，显示对话框
     showUpdateDialog(row) {
       this.dialogFormVisible = true;
       this.tmForm = { ...row };
@@ -141,7 +148,7 @@ export default {
       // 如果拷贝后的对象内部的数据地址和原对象内部的数据地址是一样的，叫浅拷贝
       // 反之是深拷贝
     },
-     // upload上传相关函数
+    // upload上传相关函数
     // 上传成功的函数
     handleAvatarSuccess(res, file) {
       // 这里面就是我们要收集图片路径的地方
@@ -165,9 +172,9 @@ export default {
       }
       return isJPGOrPNG && isLt2M;
     },
-  
-  //添加成功或修改成功发送请求
-     async addOrUpdate() {
+
+    //添加成功或修改成功发送请求
+    async addOrUpdate() {
       // 1、获取收集的参数
       let trademark = this.tmForm;
       // 2、整理参数
@@ -196,6 +203,24 @@ export default {
       }
     },
 
+    //点击删除，删除商品
+    async deleteUpDate(row) {
+      const id=row.id
+      try {
+        const result = await this.$api.trademark.remove(id);
+        if (result.code === 20000 || result.code === 200) {
+          this.$message.success("删除成功");
+          //删除成功后，重新发送请求，如果当页数据只剩一条删除后，应跳到前一页，否则在本页
+          this.getTrademarkList(
+            this.trademarkList.length > 1 ? this.page : this.page - 1
+          );
+        } else {
+          this.$message.error("删除失败");
+        }
+      } catch (error) {
+        this.$message.error("删除请求失败");
+      }
+    },
   },
 };
 </script>
