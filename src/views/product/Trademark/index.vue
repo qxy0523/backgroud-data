@@ -204,22 +204,37 @@ export default {
     },
 
     //点击删除，删除商品
-    async deleteUpDate(row) {
-      const id=row.id
-      try {
-        const result = await this.$api.trademark.remove(id);
-        if (result.code === 20000 || result.code === 200) {
-          this.$message.success("删除成功");
-          //删除成功后，重新发送请求，如果当页数据只剩一条删除后，应跳到前一页，否则在本页
-          this.getTrademarkList(
-            this.trademarkList.length > 1 ? this.page : this.page - 1
-          );
-        } else {
-          this.$message.error("删除失败");
-        }
-      } catch (error) {
-        this.$message.error("删除请求失败");
-      }
+    deleteUpDate(row) {
+      const id = row.id;
+      //使用消息盒子，当点击删除弹出盒子，点击确认删除，就删除某一项，点击取消就不删除数据
+      this.$confirm(`确认要删除${row.tmName}吗？`, "确认信息", {
+        distinguishCancelAndClose: true,
+        confirmButtonText: "确认",
+        cancelButtonText: "取消",
+      })
+        //.then后面的就是点击确认删除，发送请求，.catch就是取消修改
+        .then(async () => {
+          try {
+            const result = await this.$api.trademark.remove(id);
+            if (result.code === 20000 || result.code === 200) {
+              this.$message.success("删除成功");
+              //删除成功后，重新发送请求，如果当页数据只剩一条删除后，应跳到前一页，否则在本页
+              this.getTrademarkList(
+                this.trademarkList.length > 1 ? this.page : this.page - 1
+              );
+            } else {
+              this.$message.error("删除失败");
+            }
+          } catch (error) {
+            this.$message.error("删除请求失败");
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "取消修改",
+          });
+        });
     },
   },
 };
