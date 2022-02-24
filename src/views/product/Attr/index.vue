@@ -5,16 +5,31 @@
         <CategorySelector></CategorySelector>
       </template>
     </el-card>
-    <el-card style="margin-top:10px"></el-card>
+    <el-card style="margin-top: 20px">
+      <template>
+        <div>
+          <el-button type="primary" icon="el-icon-plus">添加属性</el-button>
+          <el-table style="width: 100%" border>
+            <el-table-column prop="" label="序号" width="80" type="index" align="center">
+            </el-table-column>
+            <el-table-column prop="" label="属性名称" width="100">
+            </el-table-column>
+            <el-table-column prop="" label="属性值列表" width="width">
+            </el-table-column>
+            <el-table-column prop="" label="操作" width="100">
+            </el-table-column>
+          </el-table>
+        </div>
+      </template>
+    </el-card>
   </div>
 </template>
 
 <script>
 export default {
-    name:"Attr"
-}
+  name: "Attr",
+};
 </script>
 
 <style lang="less" scoped>
-
 </style>
