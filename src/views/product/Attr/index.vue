@@ -28,6 +28,20 @@
 <script>
 export default {
   name: "Attr",
+  data() {
+    return {
+      //获取一级列表数据
+      getCategory1List: [],
+      getCategory2List: [],
+      getCategory3List: [],
+      cFrom: {
+        //获取选择好的id
+        getCategory1Id: "",
+        getCategory2Id: "",
+        getCategory3Id: "",
+      },
+    };
+  },
 };
 </script>
 
