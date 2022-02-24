@@ -5,7 +5,6 @@
     >
     <el-table :data="trademarkList" border style="width: 100%; margin: 20px 0">
       <el-table-column
-        prop="prop"
         label="序号"
         type="index"
         align="center"

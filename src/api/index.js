@@ -10,5 +10,5 @@
 // }
 
 export {default as trademark} from './trademark'
-export {default as trade} from "@/api/trade"
+export {default as attrs} from "@/api/attrs"
 export {default as categorylist} from "@/api/categorylist"

@@ -17,6 +17,7 @@ import '@/icons' // icon
 import '@/permission' // permission control
 
 import CategorySelector from "@/components/CategorySelector"
+import MyButton from "@/components/MyButton"
 
 Vue.prototype.$api=api
 // api=>{
@@ -26,6 +27,8 @@ Vue.prototype.$api=api
 
 //全局注册
 Vue.component("CategorySelector",CategorySelector)
+//全局注册
+Vue.component("MyButton",MyButton)
 
 /**
  * If you don't want to use mock-server

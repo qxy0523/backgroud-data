@@ -87,6 +87,8 @@ export default {
 
       this.cFrom.getCategory2Id = "";
       this.cFrom.getCategory3Id = "";
+
+      this.$emit("getCategoryList",{CategoryId:getCategory1Id,level:1})
       try {
         const re = await this.$api.categorylist.getCategory2(getCategory1Id);
         if ((re.code = 20000 || re.code === 200)) {
@@ -102,6 +104,7 @@ export default {
       //点击第二个列表清除后一个数据列表和id
       this.getCategory3List = [];
       this.cFrom.getCategory3Id = "";
+      this.$emit("getCategoryList",{CategoryId:getCategory2Id,level:2})
       try {
         const re = await this.$api.categorylist.getCategory3(getCategory2Id);
         if ((re.code = 20000 || re.code === 200)) {
@@ -113,7 +116,9 @@ export default {
         this.$message.error("请求列表数据失败");
       }
     },
-    handerCategory3Id() {},
+    handerCategory3Id(getCategory3Id) {
+      this.$emit("getCategoryList",{CategoryId:getCategory3Id,level:3})
+    },
   },
 };
 </script>
