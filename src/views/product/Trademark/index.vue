@@ -12,8 +12,6 @@
         width="80"
       />
       <el-table-column prop="tmName" label="品牌名称" width="width" />
-      <!-- :model="tmForm"这个属性写上是为了我们后期做表单验证而写的
-      表单验证后期要验证的数据是哪个对象 -->
       <el-table-column label="品牌LOGO" width="width">
         <template v-slot="{ row, $index }">
           <img :src="row.logoUrl" alt="" style="width: 80px; height: 60px" />
@@ -55,12 +53,12 @@
     >
       <!-- :model="tmForm"这个属性写上是为了我们后期做表单验证而写的
       表单验证后期要验证的数据是哪个对象 -->
-      <el-form style="width: 80%" :model="tmForm">
-        <el-form-item label="品牌名称" label-width="100px">
+      <el-form style="width: 80%" :model="tmForm" :rules="rules" ref="tmForm">
+        <el-form-item label="品牌名称" label-width="100px" prop="tmName">
           <el-input v-model="tmForm.tmName" autocomplete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="品牌LOGO" label-width="100px">
+        <el-form-item label="品牌LOGO" label-width="100px" prop="logoUrl">
           <el-upload
             class="avatar-uploader"
             action="/dev-api/admin/product/fileUpload"
@@ -88,6 +86,14 @@
 export default {
   name: "Trademark",
   data() {
+    const validateTmName = (rule, value, callback) => {
+      if (value.length < 2 || value.length > 5) {
+        callback(new Error("长度在2到5个字符"));
+      } else {
+        callback();
+      }
+    };
+
     return {
       page: 1,
       limit: 3,
@@ -99,6 +105,20 @@ export default {
       tmForm: {
         tmName: "",
         logoUrl: "",
+      },
+      rules: {
+        tmName: [
+          { required: true, message: "请输入商品名字", trigger: "blur" },
+          // {
+          //   min: 2,
+          //   max: 5,
+          //   message: "长度在 2 到 5 个字符",
+          //   trigger: "change",
+          // },
+          //自定义规则
+          { validator: validateTmName, trigger: "change" },
+        ],
+        logoUrl: [{ required: true, message: "请添加品牌LOGO" }],
       },
     };
   },
@@ -172,35 +192,45 @@ export default {
       }
       return isJPGOrPNG && isLt2M;
     },
-
+    //点击确认，验证整体表单
     //添加成功或修改成功发送请求
-    async addOrUpdate() {
-      // 1、获取收集的参数
-      let trademark = this.tmForm;
-      // 2、整理参数
-      // 需要的时候再整理，这里不需要
-      // 3、发请求
-      try {
-        // 4、成功干啥
-        const result = await this.$api.trademark.addOrUpdate(trademark);
-        if (result.code === 20000 || result.code === 200) {
-          this.$message.success(trademark.id ? "修改品牌成功" : "添加品牌成功");
-          // 重新获取列表数据
-          // 注意：我们现在是分页列表，那么添加成功和修改成功，列表页获取哪页数据是不一样的
-          // 修改成功，获取的还是原来那一页的数据
-          // 添加成功，获取的是第一页的数据
-          this.getTrademarkList(trademark.id ? this.page : 1);
-          // 关闭对话框
-          this.dialogFormVisible = false;
+    addOrUpdate() {
+      this.$refs.tmForm.validate(async (valid) => {
+        if (valid) {
+          // 1、获取收集的参数
+          let trademark = this.tmForm;
+          // 2、整理参数
+          // 需要的时候再整理，这里不需要
+          // 3、发请求
+          try {
+            // 4、成功干啥
+            const result = await this.$api.trademark.addOrUpdate(trademark);
+            if (result.code === 20000 || result.code === 200) {
+              this.$message.success(
+                trademark.id ? "修改品牌成功" : "添加品牌成功"
+              );
+              // 重新获取列表数据
+              // 注意：我们现在是分页列表，那么添加成功和修改成功，列表页获取哪页数据是不一样的
+              // 修改成功，获取的还是原来那一页的数据
+              // 添加成功，获取的是第一页的数据
+              this.getTrademarkList(trademark.id ? this.page : 1);
+              // 关闭对话框
+              this.dialogFormVisible = false;
+            } else {
+              this.$message.error(
+                trademark.id ? "修改品牌失败" : "添加品牌失败"
+              );
+            }
+          } catch (error) {
+            // 5、失败干啥
+            this.$message.error(
+              trademark.id ? "请求修改品牌失败" : "请求添加品牌失败"
+            );
+          }
         } else {
-          this.$message.error(trademark.id ? "修改品牌失败" : "添加品牌失败");
+          return false;
         }
-      } catch (error) {
-        // 5、失败干啥
-        this.$message.error(
-          trademark.id ? "请求修改品牌失败" : "请求添加品牌失败"
-        );
-      }
+      });
     },
 
     //点击删除，删除商品

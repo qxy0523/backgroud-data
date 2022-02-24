@@ -1,5 +1,12 @@
 <template>
-  <h1>Attr</h1>
+  <div>
+    <el-card>
+      <template>
+        <CategorySelector></CategorySelector>
+      </template>
+    </el-card>
+    <el-card style="margin-top:10px"></el-card>
+  </div>
 </template>
 
 <script>

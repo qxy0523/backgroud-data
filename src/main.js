@@ -16,12 +16,16 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
+import CategorySelector from "@/components/CategorySelector"
 
 Vue.prototype.$api=api
 // api=>{
 //   trademark,
 //   trade
 // }
+
+//全局注册
+Vue.component("CategorySelector",CategorySelector)
 
 /**
  * If you don't want to use mock-server
