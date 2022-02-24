@@ -51,6 +51,7 @@
                   title="删除"
                   icon="el-icon-delete"
                   size="mini"
+                  @click="deleteAttrForm(row)"
                 ></MyButton>
               </template>
             </el-table-column>
@@ -179,20 +180,50 @@ export default {
       this.attrForm = cloneDeep(row);
     },
     // 点击保存，保存信息
-    async saveAttrFrom(){
-      try{
-      const re=await this.$api.attrs.addOrUpdate(this.attrForm)
-      if(re.code===20000||re.code===200){
-        this.$message.success("保存成功")
-        this.isShowList = !this.isShowList;
-      }else{
-        this.$message.error("保存失败")
-      }
-      }catch(error){
-        this.$message.error("保存请求失败")
+    async saveAttrFrom() {
+      try {
+        const re = await this.$api.attrs.addOrUpdate(this.attrForm);
+        if (re.code === 20000 || re.code === 200) {
+          this.$message.success("保存成功");
+          //保存成功跳转页面
+          this.isShowList = !this.isShowList;
+          //删除之后从新获取数据
+          this.getAttrInfoList();
+        } else {
+          this.$message.error("保存失败");
+        }
+      } catch (error) {
+        this.$message.error("保存请求失败");
       }
     },
     // 点击删除数据
+    deleteAttrForm(row) {
+      this.$confirm(`确认要删除${row.attrName}？`, "确认信息", {
+        distinguishCancelAndClose: true,
+        confirmButtonText: "确认",
+        cancelButtonText: "取消",
+      })
+        .then(async () => {
+          try {
+            const re = await this.$api.attrs.remove(row.id)
+            if (re.code === 20000 || re.code === 200) {
+              this.$message.success("删除成功");
+              //删除之后从新获取数据，更新
+              this.getAttrInfoList();
+            } else {
+              this.$message.error("删除失败");
+            }
+          } catch (error) {
+            this.$message.error("删除请求失败");
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: '确认取消'
+          });
+        });
+    },
   },
 };
 </script>
