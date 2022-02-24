@@ -11,7 +11,7 @@
           <el-button
             type="primary"
             icon="el-icon-plus"
-            @click="isShowList = !isShowList"
+            @click="addAndClear"
             :disabled="!getCategory3Id"
             >添加属性</el-button
           >
@@ -88,7 +88,7 @@
             <el-table-column prop="" label="操作" width="width">
             </el-table-column>
           </el-table>
-          <el-button type="primary">保存</el-button>
+          <el-button type="primary" @click="saveAttrFrom">保存</el-button>
           <el-button @click="isShowList = !isShowList">取消</el-button>
         </div>
       </template>
@@ -155,8 +155,18 @@ export default {
       }
     },
     //修改bug
+    // 添加属性一次后，再次添加，会把之前的数据保存，再次添加属性的时候，清空上次数据，并将categoryId填入
+    addAndClear() {
+      this.isShowList = !this.isShowList;
+      this.attrForm = {
+        attrName: "",
+        attrValueList: [],
+        categoryId: this.getCategory3Id,
+        categoryLevel: 3,
+      };
+    },
 
-    //点击添加属性,向attrValueList数组中添加数据，刚开始添加一个空数组，通过input框添加属性值
+    //点击添加属性值,向attrValueList数组中添加数据，刚开始添加一个空数组，通过input框添加属性值
     addAttribute() {
       this.attrForm.attrValueList.push({
         attrId: this.attrForm.id,
@@ -165,9 +175,24 @@ export default {
     },
     //点击修改数据
     changeAttrForm(row) {
-     this.isShowList=!this.isShowList
+      this.isShowList = !this.isShowList;
       this.attrForm = cloneDeep(row);
     },
+    // 点击保存，保存信息
+    async saveAttrFrom(){
+      try{
+      const re=await this.$api.attrs.addOrUpdate(this.attrForm)
+      if(re.code===20000||re.code===200){
+        this.$message.success("保存成功")
+        this.isShowList = !this.isShowList;
+      }else{
+        this.$message.error("保存失败")
+      }
+      }catch(error){
+        this.$message.error("保存请求失败")
+      }
+    },
+    // 点击删除数据
   },
 };
 </script>
