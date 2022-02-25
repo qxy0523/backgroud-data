@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form :inline="true">
+    <el-form :inline="true" :disabled="!isShowList">
       <el-form-item label="一级分类">
         <el-select
           placeholder="请选择"
@@ -49,6 +49,7 @@
 <script>
 export default {
   name: "CategorySelector",
+  props:["isShowList"],
   data() {
     return {
       //获取一级列表数据

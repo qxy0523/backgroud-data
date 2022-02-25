@@ -2,7 +2,7 @@
   <div>
     <el-card>
       <template>
-        <CategorySelector @getCategoryList="getCategoryList"></CategorySelector>
+        <CategorySelector @getCategoryList="getCategoryList" :isShowList="isShowList"></CategorySelector>
       </template>
     </el-card>
     <el-card style="margin-top: 20px">
@@ -58,10 +58,10 @@
           </el-table>
         </div>
         <div v-show="!isShowList">
-          <el-form :inline="true">
-            <el-form-item label="属性名">
+          <el-form :inline="true" :model="attrForm" :rules="rules">
+            <el-form-item label="属性名" prop="attrName">
               <el-input
-                placeholder="请输入属性命"
+                placeholder="请输入属性名"
                 v-model="attrForm.attrName"
               ></el-input>
             </el-form-item>
@@ -71,6 +71,7 @@
             icon="el-icon-plus"
             style="margin-righe: 10px"
             @click="addAttribute"
+            :disabled="!attrForm.attrName"
             >添加属性值</el-button
           >
           <el-button @click="isShowList = !isShowList">取消</el-button>
@@ -83,13 +84,42 @@
             </el-table-column>
             <el-table-column prop="" label="属性名" width="width">
               <template v-slot="{ row, $index }">
-                <el-input v-model="row.valueName"></el-input>
+                <el-input
+                  v-model="row.valueName"
+                  v-if="row.isShow"
+                  @blur="changLook(row)"
+                  @keyup.enter.native="changLook(row)"
+                  size="mini"
+                  placeholder="输入属性值名称"
+                  :ref="$index"
+                ></el-input>
+                <span
+                  v-else
+                  @click="changeEdit(row, $index)"
+                  style="display: block; width: 100%"
+                  >{{ row.valueName }}</span
+                >
               </template>
             </el-table-column>
             <el-table-column prop="" label="操作" width="width">
+              <template v-slot="{ row, $index }">
+                <el-popconfirm
+                  :title="`你确认要删除${row.valueName}吗？`"
+                  @onConfirm="deleteAttrList($index)"
+                >
+                  <MyButton
+                    slot="reference"
+                    type="danger"
+                    title="删除"
+                    icon="el-icon-delete"
+                    size="mini"
+                  >
+                  </MyButton>
+                </el-popconfirm>
+              </template>
             </el-table-column>
           </el-table>
-          <el-button type="primary" @click="saveAttrFrom">保存</el-button>
+          <el-button type="primary" @click="saveAttrFrom" :disabled="!attrForm.attrValueList.length">保存</el-button>
           <el-button @click="isShowList = !isShowList">取消</el-button>
         </div>
       </template>
@@ -123,7 +153,16 @@ export default {
         categoryId: "",
         categoryLevel: 3,
       },
+      rules:{
+        attrName:[
+          { required: true, message: "请输入商品名字", trigger: "blur" },
+          { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "change" },
+        ],
+      }
     };
+  },
+  mounted() {
+    console.log(this);
   },
   methods: {
     getCategoryList({ CategoryId, level }) {
@@ -171,16 +210,44 @@ export default {
     addAttribute() {
       this.attrForm.attrValueList.push({
         attrId: this.attrForm.id,
-        valueName: this.valueName,
+        valueName: "",
+        //当添加的时候，属性列表为input框，当修改的时候为span框
+        isShow: true,
+      });
+      // 给最后一个输入框获取焦点
+      this.$nextTick(() => {
+        this.$refs[this.attrForm.attrValueList.length - 1].focus();
       });
     },
     //点击修改数据
     changeAttrForm(row) {
       this.isShowList = !this.isShowList;
       this.attrForm = cloneDeep(row);
+
+      //点击修改数据，是查看状态，默认为span标签，想让给每个数据添加一个isShow，使用$set响应式
+      this.attrForm.attrValueList.forEach((item) => {
+        this.$set(item, "isShow", false);
+      });
     },
     // 点击保存，保存信息
     async saveAttrFrom() {
+      //处理数据
+      // 整理参数：
+      // 1、属性值名称如果为空串(不输入内容直接保存)，从属性值列表当中去除
+      // 2、属性值当中去除isEdit属性
+      // 3、属性值列表如果没有属性值，不发请求
+      // 4.如果表头为空，不能保存
+      this.attrForm.attrValueList = this.attrForm.attrValueList.filter(
+        (item) => {
+          if (item.valueName !== "") {
+            delete item.isShow
+            return true;
+          }
+        }
+      );
+
+      if(!this.attrForm.attrValueList.length||!this.attrForm.attrName.trim())return
+
       try {
         const re = await this.$api.attrs.addOrUpdate(this.attrForm);
         if (re.code === 20000 || re.code === 200) {
@@ -205,7 +272,7 @@ export default {
       })
         .then(async () => {
           try {
-            const re = await this.$api.attrs.remove(row.id)
+            const re = await this.$api.attrs.remove(row.id);
             if (re.code === 20000 || re.code === 200) {
               this.$message.success("删除成功");
               //删除之后从新获取数据，更新
@@ -220,9 +287,50 @@ export default {
         .catch(() => {
           this.$message({
             type: "info",
-            message: '确认取消'
+            message: "确认取消",
           });
         });
+    },
+    //当失去焦点的时候，将input框改为span框
+    changLook(row) {
+      /* 
+        input在切换为span之前要判断数据合法性
+        1、数据是不是空的
+        2、除了自己以外，输入的数据是不是和其它的属性值名称重复
+      */
+      //如果输入的数据去空格后为空，则清空数据，并返回
+      let valueName = row.valueName;
+      if (valueName.trim() === "") {
+        row.valueName = "";
+        return;
+      }
+      let attrValueList = this.attrForm.attrValueList.some((item) => {
+        // 除了自己以外，输入的数据是不是和其它的属性值名称重复
+        if (row !== item) {
+          return row.valueName === item.valueName;
+        }
+      });
+      if (attrValueList) {
+        this.$message.error("该属性值已经存在，请重新输入");
+        //提示的同时清空输入内容，并将input框显示出来
+        row.valueName = "";
+        // row.isShow = true;
+        return;
+      }
+      row.isShow = false;
+    },
+    //点击span框转到input模式,编辑模式
+    changeEdit(row, index) {
+      //转为input框
+      row.isShow = true;
+      // isShow，改变时候获取焦点
+      this.$nextTick(() => {
+        this.$refs[index].focus();
+      });
+    },
+    //点击删除某个属性名
+    deleteAttrList(index) {
+      return this.attrForm.attrValueList.splice(index, 1);
     },
   },
 };
