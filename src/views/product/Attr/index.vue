@@ -2,7 +2,10 @@
   <div>
     <el-card>
       <template>
-        <CategorySelector @getCategoryList="getCategoryList" :isShowList="isShowList"></CategorySelector>
+        <CategorySelector
+          @getCategoryList="getCategoryList"
+          :isShowList="isShowList"
+        ></CategorySelector>
       </template>
     </el-card>
     <el-card style="margin-top: 20px">
@@ -119,7 +122,12 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-button type="primary" @click="saveAttrFrom" :disabled="!attrForm.attrValueList.length">保存</el-button>
+          <el-button
+            type="primary"
+            @click="saveAttrFrom"
+            :disabled="!attrForm.attrValueList.length"
+            >保存</el-button
+          >
           <el-button @click="isShowList = !isShowList">取消</el-button>
         </div>
       </template>
@@ -132,6 +140,18 @@ import cloneDeep from "lodash/cloneDeep";
 export default {
   name: "Attr",
   data() {
+    // const validatePass = (rule, value, callback) => {
+    //   console.log(attrList);
+    //   const re = attrList.some((item) => {
+    //     return item.attrName === value;
+    //   });
+    //   if (re) {
+    //     callback(new Error("该值已存在，请从新输入"));
+    //   } else {
+    //     callback();
+    //   }
+    // };
+
     return {
       //搜集三个列表的id，发送请求，获取数据信息
       getCategory1Id: "",
@@ -153,16 +173,20 @@ export default {
         categoryId: "",
         categoryLevel: 3,
       },
-      rules:{
-        attrName:[
+      rules: {
+        attrName: [
           { required: true, message: "请输入商品名字", trigger: "blur" },
-          { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "change" },
+          {
+            required: true,
+            min: 2,
+            max: 5,
+            message: "长度在 2 到 5 个字符",
+            trigger: "change",
+          },
+          // { validator: validatePass, trigger: "blur" },
         ],
-      }
+      },
     };
-  },
-  mounted() {
-    console.log(this);
   },
   methods: {
     getCategoryList({ CategoryId, level }) {
@@ -222,6 +246,7 @@ export default {
     //点击修改数据
     changeAttrForm(row) {
       this.isShowList = !this.isShowList;
+      //修改数据后，input框是双向绑定的，就算点击取消数据还是会跟新，因为公用一套数据，这时候需要克隆
       this.attrForm = cloneDeep(row);
 
       //点击修改数据，是查看状态，默认为span标签，想让给每个数据添加一个isShow，使用$set响应式
@@ -240,14 +265,22 @@ export default {
       this.attrForm.attrValueList = this.attrForm.attrValueList.filter(
         (item) => {
           if (item.valueName !== "") {
-            delete item.isShow
+            delete item.isShow;
             return true;
           }
         }
       );
-
-      if(!this.attrForm.attrValueList.length||!this.attrForm.attrName.trim())return
-
+      if (!this.attrForm.attrValueList.length || !this.attrForm.attrName.trim())
+        return;
+      //如果属性名已经存在，就不保存，并提示
+      const re = this.attrList.some((item) => {
+        return item.attrName === this.attrForm.attrName;
+      });
+      if (re) {
+        this.$alert("该值已存在，请从新输入")
+        // this.attrForm.attrName=''
+        return
+      }
       try {
         const re = await this.$api.attrs.addOrUpdate(this.attrForm);
         if (re.code === 20000 || re.code === 200) {

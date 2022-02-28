@@ -41,5 +41,14 @@ export default{
             url:`/admin/product/baseTrademark/${page}/${limit}`,
             methods:"get",
         })
-    }
+    },
+
+    // GET /admin/product/baseTrademark/getTrademarkList
+    //获取商品名称列表
+    getTrademarkList(){
+      return myAxios({
+          url:`/admin/product/baseTrademark/getTrademarkList`,
+          methods:"get",
+      })
+  }
 }

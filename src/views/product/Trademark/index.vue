@@ -58,6 +58,7 @@
         </el-form-item>
 
         <el-form-item label="品牌LOGO" label-width="100px" prop="logoUrl">
+          <!--  action="/dev-api/admin/product/fileUpload"接口文档地址，/dev-api需要自己加 -->
           <el-upload
             class="avatar-uploader"
             action="/dev-api/admin/product/fileUpload"

@@ -12,3 +12,5 @@
 export {default as trademark} from './trademark'
 export {default as attrs} from "@/api/attrs"
 export {default as categorylist} from "@/api/categorylist"
+export {default as sku} from "@/api/sku"
+export {default as spu} from "@/api/spu"
