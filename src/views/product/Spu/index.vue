@@ -44,6 +44,7 @@
                   title="查看SPU的SKU列表"
                   size="mini"
                   style="margin-left: 10px"
+                  @click="lookSkuList(row)"
                 ></MyButton>
                 <el-popconfirm
                   :title="`确定删除${row.spuName}吗？`"

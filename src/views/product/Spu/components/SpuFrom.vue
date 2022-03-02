@@ -61,7 +61,7 @@
           type="primary"
           icon="el-icon-plus"
           @click="addSpuSaleAttrList"
-          :disabled="!unSelectedSaleAttrList.length"
+          :disabled="!saleAttrIdName"
           >添加销售属性</el-button
         >
         <el-table border style="width: 100%" :data="spuInfo.spuSaleAttrList">
@@ -156,7 +156,7 @@ export default {
           // },
         ],
       },
-      category3Id:"",
+      category3Id: "",
       //收集销售属性，的id和属性名
       saleAttrIdName: "",
     };
@@ -200,7 +200,7 @@ export default {
       /* get (spuId) {
     return request.get(`/admin/product/getSpuById/${spuId}`)
   */
-     this.category3Id = getCategory3Id;
+      this.category3Id = getCategory3Id;
       const re1 = await this.$api.spu.get(row.id);
       if (re1.code === 20000 || re1.code === 200) {
         this.spuInfo = re1.data;
@@ -300,7 +300,7 @@ export default {
       const { spuInfo, spuImageList, category3Id } = this;
       //2.整理参数
       // category3Id
-      spuInfo.category3Id = category3Id
+      spuInfo.category3Id = category3Id;
       //整理图片
       spuInfo.spuImageList = spuImageList.map((item) => {
         //新旧图片都有name，但是旧图片服务器地址在imgUrl上，新图片在response的data上
@@ -322,8 +322,8 @@ export default {
           //保存成功，跳转页面
           this.$emit("addAndEditChange", false);
           //如果是在当前页修改数据，修改完数据应该还在当前页，再次请求数据
-          this.$emit("saveSpuFromLIst",spuInfo.id)
-          this.resetData()
+          this.$emit("saveSpuFromLIst", spuInfo.id);
+          this.resetData();
         } else {
           this.$message.error("保存失败");
         }
@@ -331,14 +331,14 @@ export default {
         this.$message.error("请求保存失败");
       }
     },
-  //无论是添加还是修改，都经过保存，在这个时候清空数据
-    resetData(){
-      Object.assign(this._data,this.$options.data())
+    //无论是添加还是修改，都经过保存，在这个时候清空数据
+    resetData() {
+      Object.assign(this._data, this.$options.data());
     },
     //点击取消跳转页面
     cancelChange() {
       this.$emit("addAndEditChange", false);
-      this.resetData()
+      this.resetData();
     },
   },
   computed: {

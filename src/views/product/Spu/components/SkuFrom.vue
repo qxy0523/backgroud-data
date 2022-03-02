@@ -264,19 +264,17 @@ export default {
       try{
         const re=await this.$api.sku.addUpdate(skuInfo)
         if(re.code===20000||re.code===200){
+           //4.成功干嘛
           this.$message.success("保存成功")
           //跳转页面
           this.$emit("addSkuChange", false);
-
         }else{
+         //5.失败干嘛
         this.$message.error("保存失败")
         }
       }catch(error){
         this.$message.error("请求保存失败")
       }
-     
-      //4.成功干嘛
-      //5.失败干嘛
     },
   },
 };
