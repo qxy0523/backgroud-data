@@ -28,6 +28,7 @@
                   icon="el-icon-plus"
                   title="添加SKU"
                   size="mini"
+                  @click="addSku(row)"
                 ></MyButton>
                 <MyButton
                   type="warning"
@@ -44,13 +45,19 @@
                   size="mini"
                   style="margin-left: 10px"
                 ></MyButton>
-                <MyButton
-                  type="danger"
-                  icon="el-icon-delete"
-                  title="删除SPU"
-                  size="mini"
-                  style="margin-left: 10px"
-                ></MyButton>
+                <el-popconfirm
+                  :title="`确定删除${row.spuName}吗？`"
+                  @onConfirm="deleteSpu(row)"
+                >
+                  <MyButton
+                    slot="reference"
+                    type="danger"
+                    icon="el-icon-delete"
+                    title="删除SPU"
+                    size="mini"
+                    style="margin-left: 10px"
+                  ></MyButton>
+                </el-popconfirm>
               </template>
             </el-table-column>
           </el-table>
@@ -70,8 +77,9 @@
           v-show="addAndEdit"
           @addAndEditChange="addAndEditChange"
           ref="spuFrom"
+          @saveSpuFromLIst="saveSpuFromLIst"
         ></SpuFrom>
-        <SkuFrom v-show="addSKU"></SkuFrom>
+        <SkuFrom v-show="addSKU" ref="skuFrom" @addSkuChange="addSkuChange"></SkuFrom>
       </template>
     </el-card>
   </div>
@@ -105,8 +113,13 @@ export default {
   methods: {
     getCategoryList({ CategoryId, level }) {
       if (level === 1) {
+        this.getCategory1Id = "";
+        this.getCategory2Id = "";
+        this.spuFromLIst = [];
         this.getCategory1Id = CategoryId;
       } else if (level === 2) {
+        this.getCategory2Id = "";
+        this.spuFromLIst = [];
         this.getCategory2Id = CategoryId;
       } else {
         this.getCategory3Id = CategoryId;
@@ -138,20 +151,51 @@ export default {
     addAndChangeSPU() {
       this.addAndEdit = !this.addAndEdit;
       this.isShowList = !this.isShowList;
-      
-      this.$refs.spuFrom.getTrademarkLists();
-      this.$refs.spuFrom.baseSaleAttrLists();
+
+      this.$refs.spuFrom.getTrademarkLists(this.getCategory3Id);
+      this.$refs.spuFrom.baseSaleAttrLists(this.getCategory3Id);
     },
     editAndChangeSPU(row) {
       this.addAndEdit = !this.addAndEdit;
       this.isShowList = !this.isShowList;
       //点击修改获取到组件内的方法，在组件内发送请求
-      this.$refs.spuFrom.getImagesAddSkuList(row);
+      this.$refs.spuFrom.getImagesAddSkuList(row, this.getCategory3Id);
     },
-
+    //分页面点击保存，调用getSpuFromLIst请求，再次请求更新过的列表
+    saveSpuFromLIst(skuId) {
+      //保存有category3Id，添加是没有category3Id的
+      if (skuId) {
+        this.getSpuFromLIst(this.page);
+      } else {
+        this.getSpuFromLIst();
+      }
+    },
     //点击取消，跳转页面
     addAndEditChange(type) {
       this.addAndEdit = type;
+      this.isShowList = !this.isShowList;
+    },
+    addSkuChange(type){
+      this.addSKU=type
+    },
+    //点击删除SPU
+    async deleteSpu(row) {
+      const re = await this.$api.spu.remove(row.id);
+      if (re.code === 20000 || re.code === 200) {
+        this.$message.success("删除成功");
+        //删除成功，从新请求列表
+        this.getSpuFromLIst();
+      } else {
+        this.$message.error("删除失败");
+      }
+    },
+    //点击添加sku
+    addSku(row) {
+      this.addSKU = true;
+      //调用skuForm组件的方法，发送请求
+      this.$refs.skuFrom.getInitAddSkuFormData(row, this.getCategory1Id, this.getCategory2Id);
+      //三级列表禁用
+      this.isShowList=false
     },
   },
 };
