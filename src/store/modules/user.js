@@ -2,7 +2,7 @@ import {
   login,
   logout,
   getInfo
-} from '@/api/user'
+} from '@/api/acl/user'
 // import { getToken, setToken, removeToken } from '@/utils/auth'
 import {
   resetRouter,
@@ -24,20 +24,36 @@ import {
 // 处理routes，从全部AllRoutes中筛选出routes中的路由
 // 最终获取的routes，是当前用户的所有路由信息
 // routesArray请求返回过来的route名称组成的数组
-function filterAsyncRouters(allAsyncRoutes, routesArray) {
-  //从全部异步路由中筛选出，和routes同名的路由
-  let asyncRouters = allAsyncRoutes.filter((item) => {
-    //从routes路由名字数组中根据字符串查找名字相同的
-    if (routesArray.indexOf(item.name) !== -1) {
-      // 再次判断里面是否有children
+// function filterAsyncRouters(allAsyncRoutes, routesArray) {
+//   //从全部异步路由中筛选出，和routes同名的路由
+//   let asyncRouters = allAsyncRoutes.filter((item) => {
+//     //从routes路由名字数组中根据字符串查找名字相同的
+//     if (routesArray.indexOf(item.name) !== -1) {
+//       // 再次判断里面是否有children
+//       if (item.children && item.children.length) {
+//         // 在次将children给覆盖
+//         item.children=filterAsyncRouters(item.children,routesArray)
+//       }
+          // return true;
+//     }
+//   })
+//   return asyncRouters
+// }
+
+//这个函数专门根据用户返回的routes路由name字符串数组过滤出用户真正的异步路由数组
+function filterMyAsyncRoutes(allAsyncRoutes, routeNames) {
+  const myAsyncRoutes = allAsyncRoutes.filter(item => {
+    //判断一级路由
+    if (routeNames.indexOf(item.name) !== -1) {
+      //判断二级路由，使用递归去操作
       if (item.children && item.children.length) {
-        // 在次将children给覆盖
-        item.children=filterAsyncRouters(item.children,routesArray)
+        //递归查找符合条件的二级路由，然后把二级路由整体改为符合条件的二级路由
+        item.children = filterMyAsyncRoutes(item.children, routeNames)
       }
+      return true
     }
-    return true;
   })
-  return asyncRouters
+  return myAsyncRoutes
 }
 const state = {
   token: localStorage.getItem("token_key"),
@@ -71,11 +87,11 @@ const mutations = {
   },
   SET_ROUTES(state, value) {
     //routes里面放的是所有的路由对象，而非路由名称
-    state.routes=[...constantRoutes,...value,anyRoute]
-      // state.routes=constantRoutes.concat(value,anyRoute)
+    // state.routes=[...constantRoutes,...value,anyRoute]
+    state.routes = constantRoutes.concat(value, anyRoute)
     // 路由动态引入
     // 动态添加路由到路由器当中
-    router.addRoutes([...value,anyRoute])
+    router.addRoutes([...value, anyRoute])
   }
   // SET_AVATAR: (state, avatar) => {
   //   state.avatar = avatar
@@ -137,7 +153,7 @@ const actions = {
           buttons,
           roles,
         })
-        commit('SET_ROUTES', filterAsyncRouters(allAsyncRoutes,routes))
+        commit('SET_ROUTES', filterMyAsyncRoutes(allAsyncRoutes, routes))
         resolve(data)
       }).catch(error => {
         reject(error)

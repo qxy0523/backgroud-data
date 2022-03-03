@@ -9,8 +9,14 @@
 //   attr
 // }
 
-export {default as trademark} from './trademark'
-export {default as attrs} from "@/api/attrs"
-export {default as categorylist} from "@/api/categorylist"
-export {default as sku} from "@/api/sku"
-export {default as spu} from "@/api/spu"
+export {default as trademark} from './product/trademark'
+export {default as attrs} from "@/api/product/attrs"
+export {default as categorylist} from "@/api/product/categorylist"
+export {default as sku} from "@/api/product/sku"
+export {default as permission} from "@/api/acl/permission"
+export {default as role} from "@/api/acl/role"
+// export {default as user} from "@/api/acl/user"
+export * as user from "@/api/acl/user"
+
+
+
