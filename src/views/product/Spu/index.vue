@@ -90,7 +90,12 @@
 
     <!-- 查看spu的sku列表 -->
     <!--  @click="dialogTableVisible = true" -->
-    <el-dialog title="收货地址" :visible.sync="dialogTableVisible">
+    <el-dialog
+      title="收货地址"
+      :visible.sync="dialogTableVisible"
+      v-loading="loading"
+      :before-close="handleClose"
+    >
       <el-table style="width: 100%" border :data="skuList">
         <el-table-column prop="skuName" label="名称" width="width">
         </el-table-column>
@@ -99,8 +104,12 @@
         <el-table-column prop="weight" label="重量" width="width">
         </el-table-column>
         <el-table-column label="默认图片" width="width">
-          <template v-slot="{row,$index}">
-            <img :src="row.skuDefaultImg" alt="" style="width:100px;height:100px"/>
+          <template v-slot="{ row, $index }">
+            <img
+              :src="row.skuDefaultImg"
+              alt=""
+              style="width: 100px; height: 100px"
+            />
           </template>
         </el-table-column>
       </el-table>
@@ -130,6 +139,8 @@ export default {
 
       dialogTableVisible: false, //控制dialog框的显隐
       skuList: [],
+      //加载圆圈,默认关闭，请求的时候开启，请求结束关闭
+      loading: false,
     };
   },
   components: {
@@ -230,6 +241,7 @@ export default {
     // 点击查看spu的sku列表
     async lookSkuList(row) {
       this.dialogTableVisible = true;
+      this.loading = true;
       //发送请求，获取数据
       try {
         const re = await this.$api.sku.getListBySpuId(row.id);
@@ -242,6 +254,16 @@ export default {
       } catch (error) {
         this.$message.error("请求spu的sku列表失败");
       }
+      this.loading = false;
+    },
+    // 解决小bug，出现数据延迟，可以在下一个查看sku列表中看到上一个的信息
+    // 关闭dialog之前，清除数据
+    handleClose() {
+      // 清除数据
+      this.skuList = [];
+      // 关闭loading和dialog
+      this.loading = false;
+      this.dialogTableVisible = false;
     },
   },
 };
