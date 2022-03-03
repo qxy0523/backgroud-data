@@ -29,12 +29,15 @@ router.beforeEach(async(to, from, next) => {
       const hasGetUserInfo = store.getters.name
       if (hasGetUserInfo) {
         next()
+       
       } else {
         try {
           // get user info
           await store.dispatch('user/getInfo')
 
-          next()
+          // next()
+           next({...to})
+            // next("/")
         } catch (error) {
           // remove token and go to login page to re-login
           await store.dispatch('user/resetToken')

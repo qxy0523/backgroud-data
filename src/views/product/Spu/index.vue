@@ -80,9 +80,31 @@
           ref="spuFrom"
           @saveSpuFromLIst="saveSpuFromLIst"
         ></SpuFrom>
-        <SkuFrom v-show="addSKU" ref="skuFrom" @addSkuChange="addSkuChange"></SkuFrom>
+        <SkuFrom
+          v-show="addSKU"
+          ref="skuFrom"
+          @addSkuChange="addSkuChange"
+        ></SkuFrom>
       </template>
     </el-card>
+
+    <!-- 查看spu的sku列表 -->
+    <!--  @click="dialogTableVisible = true" -->
+    <el-dialog title="收货地址" :visible.sync="dialogTableVisible">
+      <el-table style="width: 100%" border :data="skuList">
+        <el-table-column prop="skuName" label="名称" width="width">
+        </el-table-column>
+        <el-table-column prop="price" label="价格" width="width">
+        </el-table-column>
+        <el-table-column prop="weight" label="重量" width="width">
+        </el-table-column>
+        <el-table-column label="默认图片" width="width">
+          <template v-slot="{row,$index}">
+            <img :src="row.skuDefaultImg" alt="" style="width:100px;height:100px"/>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -105,6 +127,9 @@ export default {
       //控制修改SPU和添加SPU
       addAndEdit: false,
       addSKU: false,
+
+      dialogTableVisible: false, //控制dialog框的显隐
+      skuList: [],
     };
   },
   components: {
@@ -176,8 +201,8 @@ export default {
       this.addAndEdit = type;
       this.isShowList = !this.isShowList;
     },
-    addSkuChange(type){
-      this.addSKU=type
+    addSkuChange(type) {
+      this.addSKU = type;
     },
     //点击删除SPU
     async deleteSpu(row) {
@@ -194,9 +219,29 @@ export default {
     addSku(row) {
       this.addSKU = true;
       //调用skuForm组件的方法，发送请求
-      this.$refs.skuFrom.getInitAddSkuFormData(row, this.getCategory1Id, this.getCategory2Id);
+      this.$refs.skuFrom.getInitAddSkuFormData(
+        row,
+        this.getCategory1Id,
+        this.getCategory2Id
+      );
       //三级列表禁用
-      this.isShowList=false
+      this.isShowList = false;
+    },
+    // 点击查看spu的sku列表
+    async lookSkuList(row) {
+      this.dialogTableVisible = true;
+      //发送请求，获取数据
+      try {
+        const re = await this.$api.sku.getListBySpuId(row.id);
+        if (re.code === 20000 || re.code === 200) {
+          this.$message.success("获取成功");
+          this.skuList = re.data;
+        } else {
+          this.$message.error("获取失败");
+        }
+      } catch (error) {
+        this.$message.error("请求spu的sku列表失败");
+      }
     },
   },
 };
